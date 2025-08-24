@@ -1,7 +1,13 @@
 import sqlite3
+import hashlib
 import os
 
 DB_FILE = "users.db"
+
+# ------------------ Helper Functions ------------------
+def hash_password(password):
+    """Hash a password using SHA-256"""
+    return hashlib.sha256(password.encode()).hexdigest()
 
 # ------------------ Initialize Database ------------------
 def init_db():
@@ -22,12 +28,14 @@ def init_db():
 # ------------------ User Functions ------------------
 def add_user(username, password):
     """
-    Add a new user. Returns True if successful, False if username exists.
+    Add a new user. Password is hashed before saving.
+    Returns True if successful, False if username exists.
     """
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
     try:
-        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+        hashed_pw = hash_password(password)
+        c.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, hashed_pw))
         conn.commit()
         return True
     except sqlite3.IntegrityError:
@@ -41,7 +49,8 @@ def authenticate_user(username, password):
     """
     conn = sqlite3.connect(DB_FILE)
     c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, password))
+    hashed_pw = hash_password(password)
+    c.execute("SELECT * FROM users WHERE username = ? AND password = ?", (username, hashed_pw))
     user = c.fetchone()
     conn.close()
     return user is not None
@@ -57,5 +66,5 @@ def user_exists(username):
     conn.close()
     return exists
 
-# Initialize the database when this file is imported
+# ------------------ Initialize DB ------------------
 init_db()

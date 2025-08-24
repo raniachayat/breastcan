@@ -115,6 +115,10 @@ def home_page():
 
 def signup_page():
     st.title("Sign Up for BreastCan App")
+    if st.button("← Return to Home"):
+        st.session_state.current_page = "home"
+        return
+
 
     new_username = st.text_input("New Username")
     new_password = st.text_input("New Password", type="password")
@@ -132,6 +136,10 @@ def signup_page():
 
 def login_page():
     st.title("Login to BreastCan App")
+    if st.button("← Return to Home"):
+        st.session_state.current_page = "home"
+        return
+
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
@@ -297,4 +305,5 @@ else:
         if st.button("Logout"):
             logout()
     main_form()
+
 

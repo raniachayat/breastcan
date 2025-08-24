@@ -5,6 +5,11 @@ from datetime import datetime
 from fpdf import FPDF 
 from io import BytesIO 
 from breast_cancer import select_breast_therapy
+from database import add_user, authenticate_user, user_exists, init_db
+
+# Initialize DB (optional, safe to call again)
+init_db()
+
 
 # ------------------ Page Settings ------------------
 st.set_page_config(page_title="BreastCan App", layout="centered")
@@ -25,36 +30,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# ------------------ Utility Functions ------------------
-def load_users():
-    if os.path.exists("users.json"):
-        with open("users.json", "r") as f:
-            return json.load(f)
-    return {}
 
-def save_users(users):
-    with open("users.json", "w") as f:
-        json.dump(users, f)
-
-def user_exists(username):
-    users = load_users()
-    return username in users
-
-
-def register_user(username, password):
-    users = load_users()
-    if username in users:
-        return False
-    users[username] = password
-    save_users(users)
-    return True
-
-def authenticate_user(username, password):
-    users = load_users()
-    return username in users and users[username] == password
-
-def clean_text(text):
-    return text.encode('latin-1', 'ignore').decode('latin-1')
 
 # ------------------ Session Init ------------------
 for key in [
@@ -139,9 +115,6 @@ def home_page():
 
 def signup_page():
     st.title("Sign Up for BreastCan App")
-    if st.button("← Return to Home"):
-        st.session_state.current_page = "home"
-        return
 
     new_username = st.text_input("New Username")
     new_password = st.text_input("New Password", type="password")
@@ -152,17 +125,13 @@ def signup_page():
         elif user_exists(new_username):
             st.warning("Username already exists.")
         else:
-            if register_user(new_username, new_password):
+            if add_user(new_username, new_password):
                 st.success("Account created successfully. You can now log in.")
             else:
                 st.warning("Something went wrong. Please try again.")
 
-
 def login_page():
     st.title("Login to BreastCan App")
-    if st.button("← Return to Home"):
-        st.session_state.current_page = "home"
-        return
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
@@ -328,3 +297,4 @@ else:
         if st.button("Logout"):
             logout()
     main_form()
+

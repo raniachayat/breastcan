@@ -225,6 +225,16 @@ def main_form():
             st.download_button("Download Report", data=buffer, file_name=filename, mime="application/pdf")
 
 # ------------------ PDF Export ------------------
+def clean_text(text):
+    """Cleans text before writing to PDF."""
+    if not text:
+        return ""
+    text = str(text)
+    # Remove Markdown symbols (like **bold**, *italic*, etc.)
+    text = text.replace("**", "").replace("*", "")
+    # Replace multiple spaces or line breaks
+    return " ".join(text.split())
+
 def generate_pdf_report():
     class PDF(FPDF):
         def header(self):
@@ -305,5 +315,6 @@ else:
         if st.button("Logout"):
             logout()
     main_form()
+
 
 

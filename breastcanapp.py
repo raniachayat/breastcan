@@ -225,15 +225,19 @@ def main_form():
             st.download_button("Download Report", data=buffer, file_name=filename, mime="application/pdf")
 
 # ------------------ PDF Export ------------------
+import re
+
 def clean_text(text):
-    """Cleans text before writing to PDF."""
     if not text:
         return ""
     text = str(text)
-    # Remove Markdown symbols (like **bold**, *italic*, etc.)
+    # Remove markdown markers
     text = text.replace("**", "").replace("*", "")
-    # Replace multiple spaces or line breaks
+    # Remove any non-latin-1 characters (like emojis, special unicode)
+    text = re.sub(r'[^\x00-\xFF]', '', text)
+    # Normalize spaces
     return " ".join(text.split())
+
 
 def generate_pdf_report():
     class PDF(FPDF):
@@ -315,6 +319,7 @@ else:
         if st.button("Logout"):
             logout()
     main_form()
+
 
 
 
